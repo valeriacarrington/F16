@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гра Хрестики-Нулики</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #0a1a33;
+            font-family: Arial, sans-serif;
+            color: #ffffff;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+
+        canvas {
+            border: 5px solid #0077ff;
+            background-color: #1a2a55;
+            box-shadow: 0 0 20px rgba(0, 119, 255, 0.5);
+            display: block;
+            margin: auto;
+        }
+
+        .highlight {
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <h1 class="highlight">Гра Хрестики-Нулики</h1>
+    <canvas id="gameCanvas" width="300" height="300"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const boardSize = 3;
+        const cellSize = 100;
+        const board = Array.from(Array(boardSize), () => Array(boardSize).fill(null));
+        let currentPlayer = 'X';
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#0077ff';
+
+            for (let i = 1; i < boardSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.stroke();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvas.width, i * cellSize);
+                ctx.stroke();
+            }
+
+            for (let r = 0; r < boardSize; r++) {
+                for (let c = 0; c < boardSize; c++) {
+                    if (board[r][c]) {
+                        ctx.font = '60px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(board[r][c], c * cellSize + cellSize / 2, r * cellSize + cellSize / 2);
+                    }
+                }
+            }
+        }
+
+        function checkWinner() {
+            for (let i = 0; i < boardSize; i++) {
+                if (board[i][0] && board[i][0] === board[i][1] && board[i][0] === board[i][2]) return board[i][0];
+                if (board[0][i] && board[0][i] === board[1][i] && board[0][i] === board[2][i]) return board[0][i];
+            }
+            if (board[0][0] && board[0][0] === board[1][1] && board[0][0] === board[2][2]) return board[0][0];
+            if (board[0][2] && board[0][2] === board[1][1] && board[0][2] === board[2][0]) return board[0][2];
+
+            return null;
+        }
+
+        function handleClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((event.clientX - rect.left) / cellSize);
+            const y = Math.floor((event.clientY - rect.top) / cellSize);
+
+            if (board[y][x] === null) {
+                board[y][x] = currentPlayer;
+                drawBoard();
+
+                const winner = checkWinner();
+                if (winner) {
+                    setTimeout(() => {
+                        alert(`Гравець ${winner} виграв!`);
+                        resetGame();
+                    }, 100);
+                } else if (board.flat().every(cell => cell !== null)) {
+                    setTimeout(() => {
+                        alert("Нічия!");
+                        resetGame();
+                    }, 100);
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                }
+            }
+        }
+
+        function resetGame() {
+            board.forEach(row => row.fill(null));
+            currentPlayer = 'X';
+            drawBoard();
+        }
+
+        canvas.addEventListener('click', handleClick);
+        drawBoard();
+    </script>
+</body>
+</html>
